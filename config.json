@@ -1,0 +1,10 @@
+{
+  "seqc_quant":"/fs/cbcb-lab/rob/students/jason/rna-perplexity-experiments/output/seqc-bgi/quants",
+  "perplexity_path":"/fs/cbcb-lab/rob/students/noor/shoal_proj/perplexity/target/release/perplexity",
+  "shoal_path":"/fs/cbcb-lab/rob/students/noor/shoal_proj/shoalrs/shoal/target/release/shoal",
+  "seqc_test":"/fs/cbcb-lab/rob/students/jason/rna-perplexity-experiments/output/seqc-bgi/test-ecs",
+  "perp_out_path":"/fs/cbcb-lab/rob/students/noor/shoal_proj/seqc/perplexity",
+  "shoal_out":"/fs/cbcb-lab/rob/students/noor/shoal_proj/seqc/shoal",
+  "shoal_gene_out":"/fs/cbcb-lab/rob/students/noor/shoal_proj/seqc/shoal_gene",
+  "sal_gene_out":"/fs/cbcb-lab/rob/students/noor/shoal_proj/seqc/sal_gene"
+}
