@@ -37,21 +37,98 @@ test_fasta_r = test_fasta_fmt.format(end=2)
 
 FOLDS = list(range(1, config['k']+1))
 vbpriors = [1e4, 1e3, 1e2, 1e1, 1, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7]
+shoal_params = [0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000, 100000]
 train_sal_out = join(config["out_sal_train"], '{rep}_{cond}', 'vb={vb}', \
     '{fold}', 'quant.sf')
 train_sal_out_dir = join(config["out_sal_train"], '{rep}_{cond}', 'vb={vb}', \
     '{fold}')
-
+train_sal_out_vb_dir = join(config["out_sal_train"], '{rep}_{cond}', 'vb=1', \
+    '{fold}')
 test_sal_out_dir = join(config["out_sal_test"], '{rep}_{cond}', \
     '{fold}')
 
 comm_path=join("aux_info", "eq_classes.txt.gz")
-perp_file=join(config["perp_sal_path"], "vb={vb}", '{rep}_{cond}', '{fold}', 'perplexity.yml')
+perp_file_sal=join(config["perp_sal_path"], "vb={vb}", '{rep}_{cond}', '{fold}', 'perplexity.yml')
+perp_file_shoal=join(config["perp_shoal_path"], "vb=1e0", "c={w}", '{rep}_{cond}', '{fold}', 'perplexity.yml')
 train_sal_ecs=join(train_sal_out_dir, comm_path)
 test_sal_ecs=join(test_sal_out_dir, comm_path)
+train_shoal_ecs=join(train_sal_out_vb_dir, comm_path)
+
+shoal_prior = join(config["out_shoal"], "vbprior=1e0", "{fold}", "prior.tsv")
+shoal_quant_ind = join(config["out_shoal"], "vbprior=1e0", "{fold}", "{rep}_{cond}_c={w}_adapt.sf")
+shoal_params = [0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000, 100000]
+
+rule perplexity_shoal:
+    input:expand(perp_file_shoal, fold=FOLDS, w=shoal_params, cond=[1,2],rep=REPLICATES)
+    params:
+        partition = get_partition('perplexity_shoal')
+
+rule run_perplexity:
+    input:
+        train_quant=shoal_quant_ind,
+        train_ecs=train_shoal_ecs,
+        test_ecs=test_sal_ecs
+    output:
+        perp_file=perp_file_shoal
+    params:
+        perp_path=config["perplexity_path"],
+        partition = get_partition('run_perplexity')
+    shell:
+        '''
+        {params.perp_path} eval \
+            --output {output} \
+            --quants {input.train_quant} \
+            --train_ecs {input.train_ecs} \
+            --test_ecs {input.test_ecs} \
+        '''
+
+rule run_shoal_requant:
+    input:
+        expand(shoal_quant_ind, cond=[1,2], rep=REPLICATES, fold=FOLDS, w=shoal_params)
+    params:
+        partition = get_partition('run_shoal_requant')
+
+rule _run_shoal_requant:
+    input:
+        prior=shoal_prior,
+        quants_dir=train_sal_out_vb_dir
+    output:
+        shoal_quant_ind
+    params:
+        shoal_path=config["shoal_path"],
+        partition = get_partition('_run_shoal_requant'),
+        
+    shell:
+        '''
+        {params.shoal_path} requant\
+            --prior {input.prior}\
+            --sample {input.quants_dir}\
+            --output {output}\
+            --weight {wildcards.w}
+        '''
+
+rule run_shoal_prior:
+    input:expand(shoal_prior, fold=FOLDS)
+
+rule _run_shoal_prior:
+    input:
+        lambda w:expand(train_sal_out, cond=[1,2], rep=REPLICATES, vb="1", fold=w.fold)
+    output:
+        shoal_prior
+    params:
+        partition = get_partition('quant'),
+        shoal_path=config["shoal_path"]
+    shell:
+        '''
+        {params.shoal_path} create-prior\
+            --samples {input} \
+            --output {output}
+        '''
+
+# rule _run_shoal_prior:
 
 rule perplexity_salmon:
-    input:expand(perp_file, fold=FOLDS, vb=vbpriors, cond=[1,2], rep=REPLICATES)
+    input:expand(perp_file_sal, fold=FOLDS, vb=vbpriors, cond=[1,2], rep=REPLICATES)
     params:
         partition = get_partition('perplexity_salmon')
 
@@ -61,7 +138,7 @@ rule _perplexity_salmon:
         train_ecs=train_sal_ecs,
         test_ecs=test_sal_ecs
     output:
-        perp_file=perp_file
+        perp_file=perp_file_sal
     params:
         perp_path=config["perplexity_path"],
         partition = get_partition('_perplexity_salmon')
