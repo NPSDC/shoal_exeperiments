@@ -1,0 +1,14 @@
+{
+    "replicates":[1,2,3,4,5,6],
+    "reads_path":"/fs/cbcb-lab/rob/students/noor/Uncertainity/swim_data",
+    "out_reads":"/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/read_folds",
+    "k":5,
+    "perplexity-bin":"target/debug/perplexity",
+    "kfold-script":"/fs/cbcb-lab/rob/students/noor/shoal_proj/perplexity/scripts/kfolds.sh",
+    "out_sal_train":"/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/quant_train",
+    "out_sal_test":"/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/quant_test",
+    "perp_sal_path":"/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/perp_sal",
+    "sal_ind_path":"/fs/cbcb-lab/rob/students/noor/Uncertainity/boot_gibbs/index/human_gencode_v28/h_idx",
+    "sal_path":"/fs/cbcb-lab/rob/students/noor/Uncertainity/treeTerminusScripts/Chimpanzee/no_thresh_boot/.snakemake/conda/b5dc9e9ebd55a53225f40312a659f7a2/bin/salmon",
+    "perplexity_path":"/fs/cbcb-lab/rob/students/noor/shoal_proj/perplexity/target/release/perplexity"
+}

@@ -1,0 +1,169 @@
+from os.path import join
+import yaml
+configfile: "config.json"
+
+with open('cluster_partition.conf', 'r') as f:
+    partitions = yaml.safe_load(f)
+
+def get_partition(rule_name):
+    return partitions[rule_name] if rule_name in partitions else partitions['__default__']
+
+
+out_reads = config['out_reads']
+reads_dir = config['reads_path']
+REPLICATES = config['replicates']
+
+raw_reads_gz = join(reads_dir, 'out_{{rep}}', 'sample_0{{cond}}_{end}_shuffled.fa.gz')
+L_reads_gz = raw_reads_gz.format(end=1)
+R_reads_gz = raw_reads_gz.format(end=2)
+
+raw_reads_fasta = join(reads_dir, 'out_{{rep}}', 'sample_0{{cond}}_{end}_shuffled.fasta')
+L_reads_fa = raw_reads_fasta.format(end=1)
+R_reads_fa = raw_reads_fasta.format(end=2)
+
+output_dir_fmt = join(out_reads, '{rep}_{cond}')
+SEED = 2021
+#print(extend(output_dir_fmt, rep=REPLICATES, cond=[1,2]))
+
+train_fasta_fmt = join(config["out_reads"], '{{rep}}_{{cond}}', 'train', \
+    '{{fold}}', 'sample_0{{cond}}_{end}_shuffled.fasta')
+train_fasta_l = train_fasta_fmt.format(end=1)
+train_fasta_r = train_fasta_fmt.format(end=2)
+
+test_fasta_fmt = join(config["out_reads"], '{{rep}}_{{cond}}', 'test', \
+    '{{fold}}', 'sample_0{{cond}}_{end}_shuffled.fasta')
+test_fasta_l = test_fasta_fmt.format(end=1)
+test_fasta_r = test_fasta_fmt.format(end=2)
+
+FOLDS = list(range(1, config['k']+1))
+vbpriors = [1e4, 1e3, 1e2, 1e1, 1, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7]
+train_sal_out = join(config["out_sal_train"], '{rep}_{cond}', 'vb={vb}', \
+    '{fold}', 'quant.sf')
+train_sal_out_dir = join(config["out_sal_train"], '{rep}_{cond}', 'vb={vb}', \
+    '{fold}')
+
+test_sal_out_dir = join(config["out_sal_test"], '{rep}_{cond}', \
+    '{fold}')
+
+comm_path=join("aux_info", "eq_classes.txt.gz")
+perp_file=join(config["perp_sal_path"], "vb={vb}", '{rep}_{cond}', '{fold}', 'perplexity.yml')
+train_sal_ecs=join(train_sal_out_dir, comm_path)
+test_sal_ecs=join(test_sal_out_dir, comm_path)
+
+rule perplexity_salmon:
+    input:expand(perp_file, fold=FOLDS, vb=vbpriors, cond=[1,2], rep=REPLICATES)
+    params:
+        partition = get_partition('perplexity_salmon')
+
+rule _perplexity_salmon:
+    input:
+        train_quant=train_sal_out,
+        train_ecs=train_sal_ecs,
+        test_ecs=test_sal_ecs
+    output:
+        perp_file=perp_file
+    params:
+        perp_path=config["perplexity_path"],
+        partition = get_partition('_perplexity_salmon')
+    shell:
+        '''
+        {params.perp_path} eval\
+            --output {output}\
+            --quants {input.train_quant}\
+            --train_ecs {input.train_ecs}\
+            --test_ecs {input.test_ecs}\
+        '''
+
+rule run_salmon_test:
+    input:
+        expand(test_sal_ecs, rep = REPLICATES, cond = [1,2], fold = FOLDS)
+    params:
+        partition = get_partition('run_salmon_test')
+
+rule _run_salmon_test:
+    input:
+        inp_fastq1 = test_fasta_l,
+        inp_fastq2 = test_fasta_r,
+        index = join(config['sal_ind_path'], "pos.bin")
+    output:
+        out_sal = test_sal_ecs
+    resources: cpus=10, mem=32000
+    params:
+        out_dir = test_sal_out_dir,
+        partition = get_partition('_run_salmon_test'),
+        sal_path = config['sal_path'],
+        sal_ind = config['sal_ind_path']
+    shell:
+        '''
+        {params.sal_path} quant -i {params.sal_ind}\
+             -l A -p {resources.cpus} --gcBias\
+                -d\
+                --skipQuant\
+                --output {params.out_dir} -1 {input.inp_fastq1} -2 {input.inp_fastq2}    
+        '''
+
+rule run_salmon_train:
+    input:
+        expand(train_sal_out, rep = REPLICATES, cond = [1,2], fold = FOLDS, vb = vbpriors)
+    params:
+        partition = get_partition('run_salmon_train')
+
+rule _run_salmon_train:
+    input:
+        inp_fastq1 = train_fasta_l,
+        inp_fastq2 = train_fasta_r,
+        index = join(config['sal_ind_path'], "pos.bin")
+    output:
+        out_sal = train_sal_out
+    resources: cpus=10, mem=32000
+    params:
+        out_dir = train_sal_out_dir,
+        partition = get_partition('run_salmon_train'),
+        sal_path = config['sal_path'],
+        sal_ind = config['sal_ind_path']
+    shell:
+        '''
+        {params.sal_path} quant -i {params.sal_ind}\
+             -l A -p {resources.cpus} --gcBias\
+                -d\
+                --vbPrior {wildcards.vb}\
+                --output {params.out_dir} -1 {input.inp_fastq1} -2 {input.inp_fastq2}    
+        '''
+
+
+rule all_folds:
+    input:
+        expand(output_dir_fmt, rep=REPLICATES, cond=[1,2])
+    params:
+         partition = get_partition('all_folds')
+
+rule kfold:
+    input:
+        l=L_reads_gz,
+        r=R_reads_gz,
+        bin=config['kfold-script']
+    output:
+        directory(output_dir_fmt)
+    params:
+        k=config['k'],
+        seed=SEED,
+        l_fa=L_reads_fa,
+        r_fa=R_reads_fa,
+        partition = get_partition('kfold')
+    shell:
+        '''
+            echo "Uncompressing left read"
+            zcat {input.l} > {params.l_fa}
+            echo "Uncompressing right read"
+            zcat {input.r} > {params.r_fa}
+
+            {input.bin} \
+            -l {params.l_fa} \
+            -r {params.r_fa} \
+            -k {params.k} \
+            -s {params.seed} \
+            -o {output}
+
+            echo "Deleting deCompressed Stuff"
+            rm {params.l_fa} {params.r_fa}
+        '''
