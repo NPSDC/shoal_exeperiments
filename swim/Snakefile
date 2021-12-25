@@ -58,6 +58,84 @@ shoal_prior = join(config["out_shoal"], "vbprior=1e0", "{fold}", "prior.tsv")
 shoal_quant_ind = join(config["out_shoal"], "vbprior=1e0", "{fold}", "{rep}_{cond}_c={w}_adapt.sf")
 shoal_params = [0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000, 100000]
 
+sal_best_quant_dir = join(config["sal_best_quant"], "vbprior=1e0", "{rep}_{cond}")
+sal_best_quant = join(config["sal_best_quant"], "vbprior=1e0", "{rep}_{cond}", "quant.sf")
+shoal_best_quant = join(config["shoal_best_quant"], "vbprior=1e0", "c=100", "{rep}_{cond}", "adapt_quant.sf")
+shoal_best_prior = join(config["shoal_best_quant"], "vbprior=1e0", "c=100", "prior.tsv")
+
+rule shoal_quant_bestc:
+    input:
+        expand(shoal_best_quant, rep=REPLICATES, cond=[1,2])
+    params:
+        partition = get_partition('shoal_quant_bestc')
+
+rule _shoal_quant_bestc:
+    input:
+        prior=shoal_best_prior,
+        quants_dir=sal_best_quant_dir
+    output:
+        shoal_best_quant
+    params:
+        shoal_path=config["shoal_path"],
+        partition = get_partition('_shoal_quant_bestc'),
+        
+    shell:
+        '''
+        {params.shoal_path} requant\
+            --prior {input.prior}\
+            --sample {input.quants_dir}\
+            --output {output}\
+            --weight 100
+        '''
+
+rule run_shoal_best_prior:
+    input:shoal_best_prior
+    params:partition = get_partition('run_shoal_best_prior')
+
+rule _run_shoal_best_prior:
+    input:
+        expand(sal_best_quant, cond=[1,2], rep=REPLICATES)
+    output:
+        shoal_best_prior
+    params:
+        partition = get_partition('_run_shoal_best_prior'),
+        shoal_path=config["shoal_path"]
+    shell:
+        '''
+        {params.shoal_path} create-prior\
+            --samples {input} \
+            --output {output}
+        '''
+
+rule sal_quant_bestvb:
+    input:
+        expand(sal_best_quant, rep=REPLICATES, cond=[1,2])
+    params:
+        partition = get_partition('sal_quant_bestvb')
+
+rule _sal_quant_bestvb:
+    input:
+        inp_fastq1 = L_reads_gz,
+        inp_fastq2 = R_reads_gz,
+        index = join(config['sal_ind_path'], "pos.bin")
+    output:
+        out_sal = sal_best_quant
+    resources: cpus=10, mem=32000
+    params:
+        out_dir = sal_best_quant_dir,
+        partition = get_partition('_sal_quant_bestvb'),
+        sal_path = config['sal_path'],
+        sal_ind = config['sal_ind_path']
+    shell:
+        '''
+        {params.sal_path} quant -i {params.sal_ind}\
+             -l A -p {resources.cpus} --gcBias\
+                -d\
+                --vbPrior 1\
+                --output {params.out_dir} -1 {input.inp_fastq1} -2 {input.inp_fastq2}    
+        '''
+
+
 rule perplexity_shoal:
     input:expand(perp_file_shoal, fold=FOLDS, w=shoal_params, cond=[1,2],rep=REPLICATES)
     params:

@@ -8,7 +8,12 @@
     "out_sal_train":"/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/quant_train",
     "out_sal_test":"/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/quant_test",
     "perp_sal_path":"/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/perp_sal",
+    "perp_shoal_path":"/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/perp_shoal",
     "sal_ind_path":"/fs/cbcb-lab/rob/students/noor/Uncertainity/boot_gibbs/index/human_gencode_v28/h_idx",
     "sal_path":"/fs/cbcb-lab/rob/students/noor/Uncertainity/treeTerminusScripts/Chimpanzee/no_thresh_boot/.snakemake/conda/b5dc9e9ebd55a53225f40312a659f7a2/bin/salmon",
-    "perplexity_path":"/fs/cbcb-lab/rob/students/noor/shoal_proj/perplexity/target/release/perplexity"
+    "perplexity_path":"/fs/cbcb-lab/rob/students/noor/shoal_proj/perplexity/target/release/perplexity",
+    "out_shoal":"/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_out",
+    "shoal_path":"/fs/cbcb-lab/rob/students/noor/shoal_proj/shoalrs/shoal/target/release/shoal",
+    "sal_best_quant":"/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/sal_best",
+    "shoal_best_quant":"/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best"
 }
