@@ -1,0 +1,107 @@
+---
+title: "Correlation"
+author: "Noor Pratap Singh"
+date: "12/31/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = '/fs/cbcb-lab/rob/students/noor/shoal_proj/')
+```
+
+```{r}
+suppressPackageStartupMessages(source("run_limma.R"))
+dirSal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/sal_best/vbprior=1e0"
+```
+
+##### Correlation between Salmon and Shoal for weight 1e-05 for fixed prior
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_fixed_prior/vbprior=1e0/c=1e-05"
+dfSal <- getQuantFiles(dirSal, type="salmon")
+dfShoal <- getQuantFiles(dirShoal, type="shoal")
+
+txiSal <- tximport(dfSal[["files"]], type="salmon", txOut=T)
+txiShoal <- tximport(dfShoal[["files"]], type="salmon", txOut=T)
+
+corr <- sapply(seq(12), function(i) cor(txiSal[["counts"]][,i], txiShoal[["counts"]][,i], method = "spearman"))
+print(corr)
+```
+
+##### Correlation between Salmon and Shoal for weight 100 for fixed prior
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_fixed_prior/vbprior=1e0/c=100"
+dfSal <- getQuantFiles(dirSal, type="salmon")
+dfShoal <- getQuantFiles(dirShoal, type="shoal")
+
+txiSal <- tximport(dfSal[["files"]], type="salmon", txOut=T)
+txiShoal <- tximport(dfShoal[["files"]], type="salmon", txOut=T)
+
+corr <- sapply(seq(12), function(i) cor(txiSal[["counts"]][,i], txiShoal[["counts"]][,i], method = "spearman"))
+print(corr)
+```
+
+##### Correlation between Salmon and Shoal for weight 1e-05 for old prior
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best/vbprior=1e0/c=1e-05"
+dfSal <- getQuantFiles(dirSal, type="salmon")
+dfShoal <- getQuantFiles(dirShoal, type="shoal")
+
+txiSal <- tximport(dfSal[["files"]], type="salmon", txOut=T)
+txiShoal <- tximport(dfShoal[["files"]], type="salmon", txOut=T)
+
+corr <- sapply(seq(12), function(i) cor(txiSal[["counts"]][,i], txiShoal[["counts"]][,i], method = "spearman"))
+print(corr)
+```
+
+##### Correlation between Salmon and Shoal for weight 100 for old prior
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best/vbprior=1e0/c=100"
+dfSal <- getQuantFiles(dirSal, type="salmon")
+dfShoal <- getQuantFiles(dirShoal, type="shoal")
+
+txiSal <- tximport(dfSal[["files"]], type="salmon", txOut=T)
+txiShoal <- tximport(dfShoal[["files"]], type="salmon", txOut=T)
+
+corr <- sapply(seq(12), function(i) cor(txiSal[["counts"]][,i], txiShoal[["counts"]][,i], method = "spearman"))
+print(corr)
+```
+
+##### Correlation between Salmon and Shoal for weight 0.1 for updated prior
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_updated/vbprior=1e0/c=0.1"
+dfSal <- getQuantFiles(dirSal, type="salmon")
+dfShoal <- getQuantFiles(dirShoal, type="shoal")
+
+txiSal <- tximport(dfSal[["files"]], type="salmon", txOut=T)
+txiShoal <- tximport(dfShoal[["files"]], type="salmon", txOut=T)
+
+corr <- sapply(seq(12), function(i) cor(txiSal[["counts"]][,i], txiShoal[["counts"]][,i], method = "spearman"))
+print(corr)
+```
+
+##### Correlation between Salmon and Shoal for weight 1e-05 for updated prior
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_updated/vbprior=1e0/c=1e-05"
+dfSal <- getQuantFiles(dirSal, type="salmon")
+dfShoal <- getQuantFiles(dirShoal, type="shoal")
+
+txiSal <- tximport(dfSal[["files"]], type="salmon", txOut=T)
+txiShoal <- tximport(dfShoal[["files"]], type="salmon", txOut=T)
+
+corr <- sapply(seq(12), function(i) cor(txiSal[["counts"]][,i], txiShoal[["counts"]][,i], method = "spearman"))
+print(corr)
+```
+
+##### Correlation between Salmon and Shoal for weight 100 for updated prior
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_updated/vbprior=1e0/c=100"
+dfSal <- getQuantFiles(dirSal, type="salmon")
+dfShoal <- getQuantFiles(dirShoal, type="shoal")
+
+txiSal <- tximport(dfSal[["files"]], type="salmon", txOut=T)
+txiShoal <- tximport(dfShoal[["files"]], type="salmon", txOut=T)
+
+corr <- sapply(seq(12), function(i) cor(txiSal[["counts"]][,i], txiShoal[["counts"]][,i], method = "spearman"))
+print(corr)
+```

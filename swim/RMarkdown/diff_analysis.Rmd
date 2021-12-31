@@ -1,0 +1,80 @@
+---
+title: "Gene Combined pvalues"
+author: "Noor Pratap Singh"
+date: "12/31/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = '/fs/cbcb-lab/rob/students/noor/shoal_proj/')
+```
+
+```{r}
+suppressPackageStartupMessages(source("run_limma.R"))
+dirSal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/sal_best/vbprior=1e0"
+load("/fs/cbcb-lab/rob/students/noor/Uncertainity/mikelove-swimdown-216a1dd/simulate/data/simulate.rda")
+```
+
+### Doing differential analysis on old shoal
+#### Weight 0.00001
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best/vbprior=1e0/c=1e-05"
+runDE(dirSal, dirShoal)
+```
+
+#### Weight 100 aka optimal
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best/vbprior=1e0/c=100"
+runDE(dirSal, dirShoal)
+```
+
+#### Weight 100000 aka optimal
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best/vbprior=1e0/c=100000"
+runDE(dirSal, dirShoal)
+```
+
+### Doing differential analysis on shoal with fixed prior
+#### Weight 0.00001
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_fixed_prior/vbprior=1e0/c=1e-05"
+runDE(dirSal, dirShoal)
+```
+
+#### Weight 100 aka optimal
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_fixed_prior/vbprior=1e0/c=100"
+runDE(dirSal, dirShoal)
+```
+
+#### Weight 100000 aka optimal
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_fixed_prior/vbprior=1e0/c=100000"
+runDE(dirSal, dirShoal)
+```
+
+### Doing differential analysis on updated shoal
+#### Weight 0.00001
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_updated/vbprior=1e0/c=1e-05"
+runDE(dirSal, dirShoal)
+```
+
+#### Weight 0.1
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_updated/vbprior=1e0/c=0.1"
+runDE(dirSal, dirShoal)
+```
+
+#### Weight 100 aka optimal
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_fixed_prior/vbprior=1e0/c=100"
+runDE(dirSal, dirShoal)
+```
+
+#### Weight 100000 aka optimal
+```{r}
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_fixed_prior/vbprior=1e0/c=100000"
+runDE(dirSal, dirShoal)
+```
