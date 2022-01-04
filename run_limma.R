@@ -45,11 +45,11 @@ deseq2 <- function(cts, condition = NULL, cov = NULL) {
     res
 }
 
-myicobra <- function(cd, lvl="Gene", n.sub) {
+myicobra <- function(cd, lvl="Gene", n.sub, thrs = c(.01,.05,.1)) {
     cp <- calculate_performance(cd,
                                 binary_truth="status",
-                                aspect=c("fdrtpr","fdrtprcurve"),
-                                thrs=c(.01,.05,.1)
+                                aspect=c("fdrtpr","fdrtprcurve", "roc"),
+                                thrs=thrs
                                 )
     cobraplot <- prepare_data_for_plot(cp,
                                        #colorscheme=cols,
@@ -57,11 +57,12 @@ myicobra <- function(cd, lvl="Gene", n.sub) {
                                        incloverall = TRUE)
     yrng <- c(.4, 1)
     xrng <- c(0,max(.2, max(fdrtpr(cp)$FDR)))
-    plot_fdrtprcurve(cobraplot, plottype="points",
+    p <- plot_fdrtprcurve(cobraplot, plottype="points",
                      pointsize=2.5,
                      xaxisrange=xrng,
                      yaxisrange=yrng,
                      title=paste0(lvl,"-level, n=",n.sub," vs ",n.sub))
+    return(list(cp, p))
 }
 
 getQuantFiles <- function(dir, type="shoal") {
@@ -98,7 +99,7 @@ getCounts <- function(dfSalFiles, dfShoalFiles) {
     return(list(txiSal = txi, ySal = y, txiShoal = txiShoal, yShoal = yShoal))
 }
 
-runlimma <- function(countList) {
+runlimma <- function(countList, thrs) {
     allTxps <- union(rownames(countList[["ySal"]]), rownames(countList[["yShoal"]]))
     dSal <- limmavoom(countList[["txiSal"]][["counts"]][allTxps,], countList[["ySal"]][["condition"]])
     dShoal <- limmavoom(countList[["txiShoal"]][["counts"]][allTxps,], countList[["yShoal"]][["condition"]])
@@ -122,14 +123,19 @@ runlimma <- function(countList) {
     padj[["Shoal"]] <- dShoalU[["adj.P.Val"]]
     
     cd <- COBRAData(padj=padj, truth=truth)
-    return(myicobra(cd, "Transcript", 6))
+    return(list(cd=cd, cob=myicobra(cd, "Transcript", 6, thrs=thrs), salLimma = dSalU, shoalLimma = dShoalU))
 }
 
-runDE <- function(dirSal, dirShoal) {
+runDE <- function(dirSal, dirShoal, thrs = c(0.01, 0.05, 0.1)) {
     dfSal <- getQuantFiles(dirSal, type="salmon")
     dfShoal <- getQuantFiles(dirShoal, type="shoal")
     
     countsList <- getCounts(dfSal, dfShoal)
-    cob <- runlimma(countsList)
-    return(cob)
+    cob <- runlimma(countsList, thrs)
+    return(list(counts=countsList, cob=cob))
+}
+
+computeFactor <- function(cts, eps =1e-05) {
+    rat <- rowSds(cts)/(rowMeans(cts))
+    ifelse(is.nan(rat), 0, exp(-rat))
 }
