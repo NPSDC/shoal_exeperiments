@@ -80,6 +80,7 @@ corr <- sapply(seq(12), function(i) cor(txiSal[["counts"]][,i], txiShoal[["count
 print(corr)
 ```
 
+
 ##### Correlation between Salmon and Shoal for weight 1e-05 for updated prior
 ```{r}
 dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_updated/vbprior=1e0/c=1e-05"

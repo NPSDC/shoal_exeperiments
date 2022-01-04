@@ -1,0 +1,69 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = '/fs/cbcb-lab/rob/students/noor/shoal_proj/')
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+```{r}
+suppressPackageStartupMessages(source("run_limma.R"))
+dirSal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/sal_best/vbprior=1e0"
+load("/fs/cbcb-lab/rob/students/noor/Uncertainity/mikelove-swimdown-216a1dd/simulate/data/simulate.rda")
+```
+
+### Plotting factors
+```{r}
+df <- read.delim("swim/shoal_best_updated/vbprior=1e0/c=0.1/prior.tsv")
+hist(df$factor)
+```
+We have factors larger than 0.4 in great proportion
+
+### Normalizing data
+```{r}
+salFiles <- getQuantFiles(dirSal, type="salmon")
+dfSal <- tximport(salFiles[["files"]], txOut=T, type="salmon")
+dg <- DGEList(dfSal$counts, group=salFiles$condition)
+dg <- calcNormFactors(dg)
+norm <- cpm(dg, log=F, normalized.lib.sizes=T)
+fac <- computeFactor(norm)
+hist(fac)
+```
+
+### Plotting factors for equivalence classes
+#### Minimum
+```{r}
+dir <- "swim/shoal_best_updated/vbprior=1e0/c=100"
+
+min1 <- file.path(dir, "fac_min.tsv")
+min0 <- file.path(dir, "fac_min_updated.tsv")
+
+dfmin1 <- read.delim(min1, header=F)
+dfmin0 <- read.delim(min0, header=F)
+
+hist(dfmin1[,1])
+print(summary(dfmin1))
+print(summary(dfmin0))
+
+print(sum(abs(dfmin0[,1] - dfmin1[,1]) > 1e-3))
+print(sort(abs(dfmin0[,1] - dfmin1[,1]), decreasing = T)[1:20])
+```
+
+#### Weighted
+```{r}
+weighted1 <- file.path(dir, "fac_weighted.tsv")
+weighted0 <- file.path(dir, "fac_weighted_updated.tsv")
+
+dfweighted1 <- read.delim(weighted1, header=F)
+dfweighted0 <- read.delim(weighted0, header=F)
+
+hist(dfweighted1[,1])
+print(summary(dfweighted1))
+print(summary(dfweighted0))
+
+print(sum(abs(dfweighted0[,1] - dfweighted1[,1]) > 1e-3))
+print(sort(abs(dfweighted0[,1] - dfweighted1[,1]), decreasing = T)[1:20])
+```
