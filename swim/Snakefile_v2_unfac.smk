@@ -82,21 +82,14 @@ rule _shoal_quant_bestc:
         partition = get_partition('_shoal_quant_bestc'),
         
     shell:
-        # '''
-        # {params.shoal_path} requant\
-        #     --prior {input.prior}\
-        #     --sample {input.quants_dir}\
-        #     --output {output}\
-        #     --weight {wildcards.w}\
-        #     -u 1
-        # '''
         '''
         {params.shoal_path} requant-v2\
             --prior {input.prior}\
             --sample {input.quants_dir}\
             --output {output}\
             --weight {wildcards.w}\
-            -u 1
+            -u 1\
+            -f true
         '''
 
 rule run_shoal_best_prior:
@@ -188,21 +181,14 @@ rule _run_shoal_requant:
         partition = get_partition('_run_shoal_requant'),
         
     shell:
-        # '''
-        # {params.shoal_path} requant\
-        #     --prior {input.prior}\
-        #     --sample {input.quants_dir}\
-        #     --output {output}\
-        #     --weight {wildcards.w}\
-        #     -u 1
-        # '''
         '''
         {params.shoal_path} requant-v2\
             --prior {input.prior}\
             --sample {input.quants_dir}\
             --output {output}\
             --weight {wildcards.w}\
-            -u 1
+            -u 1\
+            -f true
         '''
 
 rule run_shoal_prior:
