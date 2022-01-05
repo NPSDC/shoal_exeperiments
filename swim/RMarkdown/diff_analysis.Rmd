@@ -103,3 +103,11 @@ suppressWarnings(runDE(dirSal, dirShoal))
 dirShoal <- file.path(dir, "c=100000")
 suppressWarnings(runDE(dirSal, dirShoal))
 ```
+
+### Doing differential analysis on (Requant v2) with factor set based on true de status
+#### Weight 0.1
+```{r}
+dir <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_true_de_fac/vbprior=1e0/"
+dirShoal <- file.path(dir, "c=0.1")
+suppressWarnings(ddS <- runDE(dirSal, dirShoal))
+```

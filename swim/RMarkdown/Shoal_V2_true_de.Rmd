@@ -19,11 +19,12 @@ library(pracma)
 ```
 
 ```{r}
-dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_updated/vbprior=1e0/c=0.1"
-suppressWarnings(dd <- runDE(dirSal, dirShoal, seq(0,1,0.05)))
+dirShoal <- "/fs/cbcb-lab/rob/students/noor/shoal_proj/swim/shoal_best_true_de_fac/vbprior=1e0/c=0.1"
+suppressWarnings(dd <- runDE(dirSal, dirShoal, seq(0,1,0.005)))
 df <- dd[["cob"]][["cob"]][[1]]@fdrtpr
 inds <- seq(1,nrow(df),2)
 
+dd[["cob"]][["cob"]][[2]]
 print(trapz(df[inds, "FDR"], df[inds, "TPR"])) ##Area under roc curve for Salmon
 print(trapz(df[inds+1, "FDR"], df[inds+1, "TPR"])) ##Area under roc curve for Shoal
 ```
@@ -34,30 +35,11 @@ pSal <- which(dd[["cob"]][["cd"]]@padj$Sal <= 0.1)
 fpSal <- setdiff(pSal, which(dd[["cob"]][["cd"]]@truth$status==1))
 fpShoal <- setdiff(pShoal, which(dd[["cob"]][["cd"]]@truth$status==1))
 fpOnlyShoal <- rownames(dd[["cob"]][["cd"]]@truth)[setdiff(fpShoal, fpSal)]
-facDf <- read.delim("swim/shoal_best_updated/vbprior=1e0/c=0.1/prior.tsv", row.names = 1)
+facDf <- read.delim("swim/shoal_best_true_de_fac/vbprior=1e0/c=0.1/prior.tsv", row.names = 1)
 hist(facDf[fpOnlyShoal,3])
-hist(rowMeans(dd$counts$txiShoal$counts[fpOnlyShoal,]))
-```
 
-#### Factors for differential and non differential transcripts
-```{r}
 DeTxps <- rownames(dd[["cob"]][["cd"]]@truth)[dd[["cob"]][["cd"]]@truth==1]
 nonDeTxps <- rownames(dd[["cob"]][["cd"]]@truth)[dd[["cob"]][["cd"]]@truth==0]
-
-hist(facDf[DeTxps,"factor"])
-hist(facDf[nonDeTxps,"factor"])
-```
-
-#### logFC changes with factors Shoal
-```{r}
-plot(facDf[DeTxps,"factor"], dd[["cob"]][["salLimma"]][DeTxps,"logFC"])
-plot(facDf[nonDeTxps,"factor"], dd[["cob"]][["salLimma"]][nonDeTxps,"logFC"])
-```
-
-#### logFC changes with factors Shoal
-```{r}
-plot(facDf[DeTxps,"factor"], dd[["cob"]][["shoalLimma"]][DeTxps,"logFC"])
-plot(facDf[nonDeTxps,"factor"], dd[["cob"]][["shoalLimma"]][nonDeTxps,"logFC"])
 ```
 
 #### Creating data frame
